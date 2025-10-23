@@ -6,34 +6,40 @@ using namespace std;
 
 int boardSize;
 
+// enum pour éviter d'avoir trop de variables
+
 enum Tab {
 	PLEIN,
 	VIDE,
-	BOMBE,
+	BOMBE,        
 	FLAG,
 	BOMBADJ,
 	BORDER,
 };
+// taille maximale des tableaux en prenant en compte les bordures
 
 int Bombs[32][32];
-int AdjCount[32][32];
+int AdjCount[32][32];		
 
+// fait en sorte que l'utilisateur tape ce qui lui est demandé
 
 int safeInput(const string& message) {
 	int val;
 	cout << message;
 	while (!(cin >> val)) {
-		cin.clear();
+		cin.clear();								
 		cin.ignore(10000, '\n');
 		cout << "Entree invalide, reessayez : ";
 	}
 	return val;
 }
 
+//Choix de la taille du board selon la difficulté, on ajoute toujours +2 dû aux bordures
+
 void chooseDifficulty() {
 	cout << "Choisissez une difficulte :" << endl;
 	cout << "1. Facile (9x9)" << endl;
-	cout << "2. Moyen (16x16)" << endl;
+	cout << "2. Moyen (16x16)" << endl;						
 	cout << "3. Difficile (30x16)" << endl;
 	int choice = safeInput("> ");
 
@@ -42,7 +48,7 @@ void chooseDifficulty() {
 		boardSize = 11;
 		break;
 
-	case 2:
+	case 2:										
 		boardSize = 18;
 		break;
 	case 3: 
@@ -58,12 +64,13 @@ void chooseDifficulty() {
 
 
 
+// Fonction permettant de calculer le nombre de bombes adjacentes à une case révélée non vide
 
 int countAdjacentBombs(int i, int j) {
 	int count = 0;
-	for (int di = -1; di <= 1; ++di) {
+	for (int di = -1; di <= 1; ++di) { // parcours du tableau
 		for (int dj = -1; dj <= 1; ++dj) {
-			if (di == 0 && dj == 0) continue;
+			if (di == 0 && dj == 0) continue; //si case vide on continue de parcourir					
 			int ni = i + di, nj = j + dj;
 			if (ni <= 0 || nj <= 0 || ni >= boardSize - 1 || nj >= boardSize - 1) continue;
 			if (Bombs[ni][nj] == 1) count++;
@@ -76,8 +83,8 @@ int countAdjacentBombs(int i, int j) {
 void initBombs() {
 	srand(time(0)); // initialisation du générateur aléatoire
 
-	int totalPlayable = (boardSize - 2) * (boardSize - 2);
-	int totalBombs = totalPlayable * 0.15; 
+	int totalPlayable = (boardSize - 2) * (boardSize - 2); // nombre de bombes placées à l'intérieur du tableau
+	int totalBombs = totalPlayable * 0.15; //15% du tableau est une bombe
 	int placed = 0;
 
 	for (int i = 0; i < boardSize; i++) {
@@ -102,7 +109,7 @@ void initBombs() {
 		}
 	}
 
-
+	//compteur de bombes adjacentes
 	for (int i = 1; i < boardSize - 1; i++) {
 		for (int j = 1; j < boardSize - 1; j++) {
 			if (Bombs[i][j] != 1) {
@@ -118,7 +125,7 @@ void initBombs() {
 }
 
 enum Tab Board[32][32];
-
+// initialisation du tableau d'affichage 
 void initBoard() {
 	for (int i = 0; i < boardSize; i++) {
 		for (int j = 0; j < boardSize; j++) {
@@ -132,7 +139,7 @@ void initBoard() {
 		}
 	}
 }
-
+// ce que la console affichera lorsqu'on va print le tableau
 void printTab() {
 	for (int i = 0; i < boardSize; i++) {
 		for (int j = 0; j < boardSize; j++) {
@@ -165,7 +172,7 @@ void printTab() {
 	}
 }
 
-
+//fonction permettant de poser/enlever un drapeau d'une case jugée suspecte
 void PutFlag(int i, int j) {
     if (Board[i][j] == FLAG) {
         Board[i][j] = PLEIN;   // retire le drapeau si déjà présent
@@ -179,7 +186,7 @@ void PutFlag(int i, int j) {
 
 
 
-
+//fonction réccursive permettant de révéler les cases adjacentes si la case à révéler choisie ne possède aucune bombe autour d'elle
 void CaseAdj(int i, int j) {
 	if (i <= 0 || j <= 0 || i >= boardSize - 1 || j >= boardSize - 1) return;
 	if (Board[i][j] != PLEIN) return;
@@ -199,6 +206,7 @@ void CaseAdj(int i, int j) {
 	}
 }
 
+//fonction permettant de vérifier si toutes les cases sûres sont découvertes
 bool gameOver = false;
 bool checkVictory() {
 	for (int i = 1; i < boardSize - 1; i++) {
@@ -210,7 +218,7 @@ bool checkVictory() {
 	return true; // toutes les cases sûres sont découvertes
 }
 
-
+//en cas de défaite, fonction affichant l'entièreté des bombes du tableau lors de la défaite
 void revealAllBombs() {
 	for (int i = 0; i < boardSize; i++) {
 		for (int j = 0; j < boardSize; j++) {
@@ -224,7 +232,7 @@ void revealAllBombs() {
 
 
 
-
+//fonction permettant de révéler une case choisie en fonction de coordonnées
 void revealCase(int i, int j) {
 	if (Bombs[i][j] == 1) {
 		cout << "\n BOMBE !\n";
@@ -271,8 +279,8 @@ int main() {
 			}
 			else if (checkVictory()) {
 				cout << "\nVICTOIRE ! Toutes les cases sures ont ete decouvertes !\n";
-				gameOver = true; // fin de la boucle principale
-				revealAllBombs(); // optionnel : montrer toutes les bombes
+				gameOver = true; 
+				revealAllBombs(); 
 			}
 
 			
