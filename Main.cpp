@@ -4,7 +4,7 @@
 using namespace std;
 
 
-const int boardSize = 11;
+int boardSize;
 void revealCase(int i, int j);
 enum Tab {
 	PLEIN,
@@ -13,13 +13,51 @@ enum Tab {
 	FLAG,
 	BOMBADJ,
 	BORDER,
-
-
 };
 
+int Bombs[32][32];
+int AdjCount[32][32];
 
-int Bombs[boardSize][boardSize];
-int AdjCount[boardSize][boardSize];
+
+int safeInput(const string& message) {
+	int val;
+	cout << message;
+	while (!(cin >> val)) {
+		cin.clear();
+		cin.ignore(10000, '\n');
+		cout << "Entree invalide, reessayez : ";
+	}
+	return val;
+}
+
+void chooseDifficulty() {
+	cout << "Choisissez une difficulte :" << endl;
+	cout << "1. Facile (9x9)" << endl;
+	cout << "2. Moyen (16x16)" << endl;
+	cout << "3. Difficile (30x16)" << endl;
+	int choice = safeInput("> ");
+
+	switch (choice) {
+	case 1:
+		boardSize = 11;
+		break;
+
+	case 2:
+		boardSize = 18;
+		break;
+	case 3: 
+		boardSize = 32;
+		break;
+	default:
+		boardSize = 11;
+		cout << "Choix invalide, mode facile par defaut." << endl;
+		break;
+	}
+}
+
+
+
+
 
 int countAdjacentBombs(int i, int j) {
 	int count = 0;
@@ -79,12 +117,12 @@ void initBombs() {
 
 }
 
-enum Tab Board[boardSize][boardSize];
+enum Tab Board[32][32];
 
 void initBoard() {
 	for (int i = 0; i < boardSize; i++) {
 		for (int j = 0; j < boardSize; j++) {
-			if (j == 0 || i == 0 || i == 10 || j == 10) {
+			if (j == 0 || i == 0 || i == boardSize || j == boardSize) {
 				Board[i][j] = BORDER;
 			}
 			else {
@@ -128,8 +166,16 @@ void printTab() {
 
 
 void PutFlag(int i, int j) {
-	Board[i][j] = FLAG;
+    if (Board[i][j] == FLAG) {
+        Board[i][j] = PLEIN;   // retire le drapeau si déjà présent
+    } 
+    else if (Board[i][j] == PLEIN || Board[i][j] == BOMBADJ) {
+        Board[i][j] = FLAG;    // place un drapeau sur une case encore non révélée
+    }
+    // les cases révélées (VIDE, BOMBE) restent inchangées
 }
+
+
 
 
 
@@ -153,6 +199,16 @@ void CaseAdj(int i, int j) {
 }
 
 bool gameOver = false;
+bool checkVictory() {
+	for (int i = 1; i < boardSize - 1; i++) {
+		for (int j = 1; j < boardSize - 1; j++) {
+			if (Bombs[i][j] == 0 && Board[i][j] == PLEIN)
+				return false; // une case sûre n’a pas encore été révélée
+		}
+	}
+	return true; // toutes les cases sûres sont découvertes
+}
+
 
 void revealAllBombs() {
 	for (int i = 0; i < boardSize; i++) {
@@ -184,47 +240,59 @@ void revealCase(int i, int j) {
 
 int main() {
 
-
+	chooseDifficulty();
 	initBoard();
 	initBombs();
-
 	printTab();
 
 	int choice = -1;
 	while (choice != 0 && !gameOver) {
-		cout << "1. Print" << endl;
-		cout << "2. Reveal une case" << endl;
-		cout << "3. Placer un drapeau" << endl;
-
-		cout << "0. Exit" << endl;
-		cin >> choice;
+		choice = safeInput("\n1. Print\n2. Reveal une case\n3. Placer un drapeau\n0. Exit\n> ");
 
 		int i, j;
 
 		switch (choice) {
+		
 		case 1:
 			printTab();
 			break;
 
 		case 2:
 			cout << "Choisir les coordonnees d'une case a decouvrir :";
-			cin >> i >> j;
+			i = safeInput("Ligne (i) : ");
+			j = safeInput("Colonne (j) : ");
 			revealCase(i, j);
 			printTab();
 			
 			if (gameOver) {
-				cout << "G A M E   O V E R !";
+				cout << "\nG A M E   O V E R !\n";
 				revealAllBombs();
-				
 			}
+			else if (checkVictory()) {
+				cout << "\nVICTOIRE ! Toutes les cases sures ont ete decouvertes !\n";
+				gameOver = true; // fin de la boucle principale
+				revealAllBombs(); // optionnel : montrer toutes les bombes
+			}
+
 			
 			
 			break;
 		case 3:
-			cout << "Choisir des coordonnees pour placer un drapeau :";
-			cin >> i >> j;
-			PutFlag(i, j);
-			printTab();
+			i = safeInput("Ligne (i) : ");
+			j = safeInput("Colonne (j) : ");
+			if (i > 0 && i < boardSize - 1 && j > 0 && j < boardSize - 1) {
+				PutFlag(i, j);
+				printTab();
+			}
+			else {
+				cout << "Coordonnees hors limites.\n";
+			}
+			break;
+		case 0:
+			cout << "Sortie du jeu.\n";
+			break;
+		default:
+			cout << "Choix invalide.\n";
 			break;
 		}
 	}
