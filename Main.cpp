@@ -1,7 +1,6 @@
-
-// tesy
-
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 using namespace std;
 
 
@@ -19,25 +18,49 @@ enum Tab {
 };
 
 
-int Bombs[boardSize][boardSize] = {  2,2,2,2,2,2,2,2,2,2,2,
-									 2,0,0,0,0,0,0,0,0,0,2,
-									 2,0,0,1,1,0,0,0,1,0,2,
-									 2,0,0,0,1,0,1,0,1,0,2,
-									 2,0,1,0,1,0,0,1,0,0,2,
-									 2,0,1,0,0,1,0,0,1,0,2,
-									 2,0,0,1,0,0,0,1,0,0,2,
-									 2,0,0,0,0,0,0,0,0,0,2,
-									 2,0,0,0,0,0,1,1,1,0,2,
-									 2,0,0,0,0,0,0,0,0,0,2,
-									 2,2,2,2,2,2,2,2,2,2,2, };
+int Bombs[boardSize][boardSize];
+int AdjCount[boardSize][boardSize];
 
-//void initBombs() {
-//	for (int i = 0; i < boardSize; i++) {
-//		for (int j = 0; j < boardSize; j++) {
-//			Bombs[i][j] = 0;
-//		}
-//	}
-//}
+void initBombs() {
+	srand(time(0)); // initialisation du générateur aléatoire
+
+	int totalPlayable = (boardSize - 2) * (boardSize - 2);
+	int totalBombs = totalPlayable * 0.15; 
+	int placed = 0;
+
+	for (int i = 0; i < boardSize; i++) {
+		for (int j = 0; j < boardSize; j++) {
+			if (i == 0 || j == 0 || i == boardSize - 1 || j == boardSize - 1) {
+				Bombs[i][j] = 2; // la bordure
+			}
+			else {
+				Bombs[i][j] = 0; // on vide tout avant
+			}
+		}
+	}
+	
+	for (int i = 1; i < boardSize - 1; i++) {
+		for (int j = 1; j < boardSize - 1; j++) {
+			if (Bombs[i][j] != 1) {
+				AdjCount[i][j] = countAdjacentBombs(i, j);
+			}
+			else {
+				AdjCount[i][j] = -1; // marque les bombes
+			}
+		}
+	}
+
+	// Placement aléatoire des bombes à l'intérieur
+	while (placed < totalBombs) {
+		int i = rand() % (boardSize - 2) + 1; // évite les bordures
+		int j = rand() % (boardSize - 2) + 1;
+
+		if (Bombs[i][j] == 0) { // seulement si la case est vide
+			Bombs[i][j] = 1;
+			placed++;
+		}
+	}
+}
 
 enum Tab Board[boardSize][boardSize];
 
@@ -74,7 +97,7 @@ void printTab() {
 				cout << " # ";
 				break;
 			case BOMBADJ: 
-				cout << " " << Bombs[i][j] << " "; 
+				cout << " " << AdjCount[i][j] << " ";
 				break;
 
 
@@ -107,11 +130,10 @@ void CaseAdj(int i, int j) {
 	if (Board[i][j] != PLEIN) return;
 	if (Bombs[i][j] == 1) return; // ne pas révéler une bombe
 
-	int adj = countAdjacentBombs(i, j);
+	int adj = AdjCount[i][j];
 
 	if (adj > 0) {
 		Board[i][j] = BOMBADJ;
-		Bombs[i][j] = adj;
 	}
 	else {
 		Board[i][j] = VIDE;
@@ -160,7 +182,7 @@ int main() {
 
 
 	initBoard();
-	//initBombs();
+	initBombs();
 
 	printTab();
 
@@ -188,6 +210,7 @@ int main() {
 			
 			if (gameOver) {
 				cout << "G A M E   O V E R !";
+				revealAllBombs();
 				choice = 0;
 			}
 			
