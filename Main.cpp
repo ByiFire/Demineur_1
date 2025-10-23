@@ -162,6 +162,7 @@ void revealAllBombs() {
 			}
 		}
 	}
+	printTab();
 }
 
 
@@ -214,7 +215,7 @@ int main() {
 			if (gameOver) {
 				cout << "G A M E   O V E R !";
 				revealAllBombs();
-				choice = 0;
+				
 			}
 			
 			
