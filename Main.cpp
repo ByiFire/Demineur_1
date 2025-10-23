@@ -21,6 +21,20 @@ enum Tab {
 int Bombs[boardSize][boardSize];
 int AdjCount[boardSize][boardSize];
 
+int countAdjacentBombs(int i, int j) {
+	int count = 0;
+	for (int di = -1; di <= 1; ++di) {
+		for (int dj = -1; dj <= 1; ++dj) {
+			if (di == 0 && dj == 0) continue;
+			int ni = i + di, nj = j + dj;
+			if (ni <= 0 || nj <= 0 || ni >= boardSize - 1 || nj >= boardSize - 1) continue;
+			if (Bombs[ni][nj] == 1) count++;
+		}
+	}
+	return count;
+}
+
+
 void initBombs() {
 	srand(time(0)); // initialisation du générateur aléatoire
 
@@ -39,6 +53,18 @@ void initBombs() {
 		}
 	}
 	
+	// Placement aléatoire des bombes à l'intérieur
+	while (placed < totalBombs) {
+		int i = rand() % (boardSize - 2) + 1; // évite les bordures
+		int j = rand() % (boardSize - 2) + 1;
+
+		if (Bombs[i][j] == 0) { // seulement si la case est vide
+			Bombs[i][j] = 1;
+			placed++;
+		}
+	}
+
+
 	for (int i = 1; i < boardSize - 1; i++) {
 		for (int j = 1; j < boardSize - 1; j++) {
 			if (Bombs[i][j] != 1) {
@@ -50,16 +76,7 @@ void initBombs() {
 		}
 	}
 
-	// Placement aléatoire des bombes à l'intérieur
-	while (placed < totalBombs) {
-		int i = rand() % (boardSize - 2) + 1; // évite les bordures
-		int j = rand() % (boardSize - 2) + 1;
 
-		if (Bombs[i][j] == 0) { // seulement si la case est vide
-			Bombs[i][j] = 1;
-			placed++;
-		}
-	}
 }
 
 enum Tab Board[boardSize][boardSize];
@@ -114,16 +131,7 @@ void PutFlag(int i, int j) {
 	Board[i][j] = FLAG;
 }
 
-int countAdjacentBombs(int i, int j) {
-	int count = 0;
-	for (int di = -1; di <= 1; ++di) {
-		for (int dj = -1; dj <= 1; ++dj) {
-			if (di == 0 && dj == 0) continue;
-			if (Bombs[i + di][j + dj] == 1) count++;
-		}
-	}
-	return count;
-}
+
 
 void CaseAdj(int i, int j) {
 	if (i <= 0 || j <= 0 || i >= boardSize - 1 || j >= boardSize - 1) return;
@@ -160,18 +168,13 @@ void revealAllBombs() {
 
 
 void revealCase(int i, int j) {
-
-
-	if (Bombs[i][j] == 0) {
-		CaseAdj(i, j);
-
-	}
-	else {
+	if (Bombs[i][j] == 1) {
 		cout << "\n BOMBE !\n";
 		Board[i][j] = BOMBE;
 		gameOver = true;
 		return;
 	}
+
 	CaseAdj(i, j);
 }
 
