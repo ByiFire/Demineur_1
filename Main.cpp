@@ -5,7 +5,7 @@ using namespace std;
 
 
 int boardSize;
-void revealCase(int i, int j);
+
 enum Tab {
 	PLEIN,
 	VIDE,
@@ -122,8 +122,9 @@ enum Tab Board[32][32];
 void initBoard() {
 	for (int i = 0; i < boardSize; i++) {
 		for (int j = 0; j < boardSize; j++) {
-			if (j == 0 || i == 0 || i == boardSize || j == boardSize) {
+			if (i == 0 || j == 0 || i == boardSize - 1 || j == boardSize - 1) {
 				Board[i][j] = BORDER;
+				
 			}
 			else {
 				Board[i][j] = PLEIN;
