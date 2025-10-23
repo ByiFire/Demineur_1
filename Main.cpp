@@ -68,9 +68,9 @@ void chooseDifficulty() {
 
 int countAdjacentBombs(int i, int j) {
 	int count = 0;
-	for (int di = -1; di <= 1; ++di) { // parcours du tableau
+	for (int di = -1; di <= 1; ++di) {			// parcours du tableau
 		for (int dj = -1; dj <= 1; ++dj) {
-			if (di == 0 && dj == 0) continue; //si case vide on continue de parcourir					
+			if (di == 0 && dj == 0) continue; 					
 			int ni = i + di, nj = j + dj;
 			if (ni <= 0 || nj <= 0 || ni >= boardSize - 1 || nj >= boardSize - 1) continue;
 			if (Bombs[ni][nj] == 1) count++;
@@ -282,9 +282,6 @@ int main() {
 				gameOver = true; 
 				revealAllBombs(); 
 			}
-
-			
-			
 			break;
 		case 3:
 			i = safeInput("Ligne (i) : ");
